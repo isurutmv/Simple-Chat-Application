@@ -1,3 +1,66 @@
+<?php
+
+include ('database_connection.php');
+
+session_start();
+
+$message = '';
+
+if(isset($_SESSION['user_id']))
+{
+    header('location:index.php');
+}
+
+if(isset($_POST['login']))
+{
+
+    $query = "SELECT * FROM login WHERE username = :username";
+    $statement = $connect -> prepare($query);
+
+    $statement -> execute(
+            array(
+                    ':username' => $_POST["username"]
+
+            )
+    );
+
+    $count = $statement -> rowCount();
+
+    if($count > 0)
+    {
+         $result = $statement -> fetchAll();
+
+         foreach ($result as $row)
+         {
+             if(password_verify($_POST['password'],$row['password']))
+             {
+                        $_SESSION['user_id'] = $row['user_id'];
+                        $_SESSION['username'] = $row['username'];
+
+                        $sub_query = "INSERT INTO login_details (user_id) values ('".$row['user_id']."')";
+
+                        $statement = $connect ->prepare($sub_query);
+                        $statement -> execute();
+                        $_SESSION['login_details_id'] = $connect -> lastInsertId();
+
+                        header('location:index.php');
+             }
+             else
+             {
+                 $message = "<label>Wrong Password </label>";
+             }
+         }
+    }
+    else
+    {
+        $message = "<label>Wrong Username </label>";
+    }
+}
+
+?>
+
+
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -24,7 +87,8 @@
         <div class="panel panel-default">
             <div class="panel-heading">Chat Application Login</div>
             <div class="panel-body">
-                <form action="post">
+                <p class="text-danger"><?php echo $message;?></p>
+                <form method="post">
                     <div class="form-group">
                         <label for="username">Enter Username</label>
                         <input type="text" name="username" id="username" class="form-control" required />
