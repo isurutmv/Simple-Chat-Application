@@ -82,7 +82,7 @@ if (!isset($_SESSION['user_id']))
 
              var model_content = '<div id="user_dialog_'+to_user_id+'" class="user_dialog" title="You Have Chat With '+to_user_name+'">';
 
-             model_content +='<div style="height:400px; border: 1px solid #ccc; overflow-y: scroll; margin-bottom: 24px; padding: 16px;" class="chat_history" data-touserid="'+to_user_id+'" data-tousername="'+to_user_name+'">'
+             model_content +='<div style="height:400px; border: 1px solid #ccc; overflow-y: scroll; margin-bottom: 24px; padding: 16px;" class="chat_history" data-touserid="'+to_user_id+'" data-tousername="'+to_user_name+'" id="chat_history_'+to_user_id+'">'
 
             model_content += '</div>';
              model_content+= '<div class="form-group">';
@@ -107,5 +107,23 @@ if (!isset($_SESSION['user_id']))
 
             $("#user_dialog_"+to_user_id).dialog('open');
         });
+
+        $(document).on('click','.send_chat',function () {
+            var to_user_id = $(this).attr('id');
+            var chat_message = $('#chat_message_' +to_user_id).val();
+            $.ajax({
+
+                url:'insert_chat.php',
+                method :'POST',
+                data:{
+                    to_user_id:to_user_id,
+                    chat_message:chat_message
+                },
+                success: function (data) {
+                    $('#chat_message_' +to_user_id).val('');
+                    $('#chat_history_' +to_user_id).html(data);
+                }
+            })
+        })
     });
 </script>
